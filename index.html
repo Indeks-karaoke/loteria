@@ -5,68 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Loteria</title>
     <style>
-        /* ZMIENNE KOLORÓW DLA TRYBU CIEMNEGO I JASNEGO (FIOLETOWE) */
         :root {
-            --bg-color: #121212;
-            --container-bg: #1e1e1e;
-            --text-main: #ffffff;
-            --text-muted: #b3b3b3;
-            --input-bg: #2c2c2c;
-            --border-color: #333333;
-            --primary: #bb86fc;
-            --primary-hover: #9965f4;
-            --btn-text: #000000;
-            --danger: #ff5252;
-            --item-hover: #3a3a3a;
+            --bg-color: #121212; --container-bg: #1e1e1e; --text-main: #ffffff;
+            --text-muted: #b3b3b3; --input-bg: #2c2c2c; --border-color: #333333;
+            --primary: #bb86fc; --primary-hover: #9965f4; --btn-text: #000000;
+            --danger: #ff5252; --item-hover: #3a3a3a;
         }
 
         body.light-mode {
-            --bg-color: #f0f2f5;
-            --container-bg: #ffffff;
-            --text-main: #121212;
-            --text-muted: #555555;
-            --input-bg: #f9f9f9;
-            --border-color: #cccccc;
-            --primary: #6200ee;
-            --primary-hover: #3700b3;
-            --btn-text: #ffffff;
+            --bg-color: #f0f2f5; --container-bg: #ffffff; --text-main: #121212;
+            --text-muted: #555555; --input-bg: #f9f9f9; --border-color: #cccccc;
+            --primary: #6200ee; --primary-hover: #3700b3; --btn-text: #ffffff;
             --item-hover: #f1f1f1;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; transition: background-color 0.3s, color 0.3s, padding 0.3s; font-size: 16px; align-items: center;}
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; align-items: center; transition: 0.3s;}
         
-        .container { background-color: var(--container-bg); padding: 30px 20px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; position: relative; transition: background-color 0.3s, border-radius 0.3s, margin 0.3s; border: 1px solid var(--border-color); }
+        .container { background-color: var(--container-bg); padding: 30px 20px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; border: 1px solid var(--border-color); }
         
-        .top-controls { display: flex; justify-content: space-between; align-items: center; position: relative; margin-bottom: 5px; }
-        .lang-toggle { display: flex; justify-content: center; background: var(--input-bg); border-radius: 20px; padding: 4px; border: 1px solid var(--border-color); transition: background 0.3s, border 0.3s; margin: 0 auto; }
-        .lang-btn { background: transparent; border: none; color: var(--text-muted); font-weight: bold; font-size: 15px; padding: 8px 18px; border-radius: 16px; cursor: pointer; transition: 0.3s; margin: 0; }
+        .top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; position: relative;}
+        .lang-toggle { display: flex; justify-content: center; background: var(--input-bg); border-radius: 20px; padding: 4px; border: 1px solid var(--border-color); margin: 0 auto; }
+        .lang-btn { background: transparent; border: none; color: var(--text-muted); font-weight: bold; font-size: 15px; padding: 8px 18px; border-radius: 16px; cursor: pointer; transition: 0.3s; }
         .lang-btn.active { background: var(--primary); color: var(--btn-text); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
-
-        .theme-toggle { background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 0; margin: 0; position: absolute; right: 0; transition: transform 0.2s; }
+        .theme-toggle { background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 0; position: absolute; right: 0; transition: transform 0.2s; }
         .theme-toggle:active { transform: scale(0.9); }
 
         .draw-time { background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
         .prize-val { color: var(--primary); font-weight: bold; font-size: 1.4rem; display: block; margin-top: 5px;}
         hr.divider { border: none; border-top: 1px solid var(--border-color); margin: 15px 0; }
 
-        input { width: 100%; padding: 16px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 18px; box-sizing: border-box; text-align: center; outline: none; transition: border-color 0.2s, background 0.3s, color 0.3s; }
+        input { width: 100%; padding: 16px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 18px; box-sizing: border-box; text-align: center; outline: none; transition: 0.3s;}
         input:focus { border-color: var(--primary); }
         
-        button.action-btn { width: 100%; padding: 18px; background: var(--primary); color: var(--btn-text); border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.1s; }
+        button.action-btn { width: 100%; padding: 18px; background: var(--primary); color: var(--btn-text); border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;}
         button.action-btn:active { transform: scale(0.98); background: var(--primary-hover); }
         button.action-btn:disabled { background: #555; cursor: not-allowed; transform: none; }
         
         .footer { margin-top: 10px; font-size: 0.85rem; color: var(--text-muted); text-align: center; line-height: 1.4; }
 
-        /* Ekran Sukcesu */
         #successScreen { display: none; text-align: center; }
         h1.success-title { color: #4caf50; margin-top: 0; font-size: 28px; }
         .ticket-code { font-size: 4rem; color: #4caf50; font-weight: 900; letter-spacing: 5px; margin: 20px 0; text-shadow: 0 0 20px rgba(76,175,80,0.4); }
         .warning { color: #ff9800; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; line-height: 1.4; }
         #statusMsg { color: var(--danger); margin-top: -10px; font-weight: bold; text-align: center; }
+
+        /* NAKŁADKA ZAMKNIĘTYCH ZAPISÓW */
+        .closed-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-color); z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px; box-sizing: border-box; transition: opacity 0.5s ease;
+        }
+        .closed-overlay h2 { color: var(--primary); font-size: 2rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;}
+        .closed-overlay .closed-msg { color: var(--text-main); font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;}
+        .closed-overlay .closed-sub { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);}
     </style>
 </head>
 <body>
+
+    <div id="closedOverlay" class="closed-overlay" style="display: none; opacity: 0;">
+        <h2 id="txtClosedTitle">LOTERIA</h2>
+        <div class="closed-msg" id="txtClosedMsg">Zapisy na loterię są w tej chwili zamknięte.</div>
+        <div class="closed-sub" id="txtClosedSub">Czekaj na sygnał od DJ-a!</div>
+    </div>
 
     <div class="container" id="formScreen">
         <div class="top-controls">
@@ -101,10 +102,8 @@
     </div>
 
     <script>
-        // --- OBSŁUGA MOTYWU ---
         const themeToggle = document.getElementById('themeToggle');
         let isLightMode = localStorage.getItem('lottery_theme') === 'light';
-        
         if (isLightMode) document.body.classList.add('light-mode');
         themeToggle.textContent = isLightMode ? '🌙' : '☀️';
 
@@ -115,31 +114,20 @@
             themeToggle.textContent = isLightMode ? '🌙' : '☀️';
         });
 
-        // --- OBSŁUGA JĘZYKA ---
         const dict = {
             pl: { 
-                draw: "Najbliższe losowanie:", 
-                prize: "Nagroda:", 
-                placeholder: "Twoje imię / Pseudonim", 
-                btnReady: "Zapisz mnie! 🚀",
-                btnSending: "Wysyłanie... ⏳",
-                footer: "Możesz wysłać tylko 1 zgłoszenie na jedno losowanie/serię losowań.", 
-                errConn: "❌ Błąd połączenia. Spróbuj ponownie.", 
-                successTitle: "✅ ZAPISANO!", 
-                successDesc: "Twój unikalny kod zgłoszenia to:", 
-                successWarn: "📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny po wygranej." 
+                draw: "Najbliższe losowanie:", prize: "Nagroda:", placeholder: "Twoje imię / Pseudonim", 
+                btnReady: "Zapisz mnie! 🚀", btnSending: "Wysyłanie... ⏳",
+                footer: "Możesz wysłać tylko 1 zgłoszenie na jedno losowanie/serię losowań.", errConn: "❌ Błąd połączenia. Spróbuj ponownie.", 
+                successTitle: "✅ ZAPISANO!", successDesc: "Twój unikalny kod zgłoszenia to:", successWarn: "📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny po wygranej.",
+                closedTitle: "LOTERIA", closedMsg: "Zapisy na loterię są w tej chwili zamknięte.", closedSub: "Czekaj na sygnał od DJ-a!"
             },
             en: { 
-                draw: "Next draw:", 
-                prize: "Prize:", 
-                placeholder: "Your name / Nick", 
-                btnReady: "Sign me up! 🚀",
-                btnSending: "Sending... ⏳",
-                footer: "You can only send 1 entry per draw/series of draws.", 
-                errConn: "❌ Connection error. Try again.", 
-                successTitle: "✅ SAVED!", 
-                successDesc: "Your unique entry code is:", 
-                successWarn: "📸 Take a screenshot or save this code! You'll need it if you win." 
+                draw: "Next draw:", prize: "Prize:", placeholder: "Your name / Nick", 
+                btnReady: "Sign me up! 🚀", btnSending: "Sending... ⏳",
+                footer: "You can only send 1 entry per draw/series of draws.", errConn: "❌ Connection error. Try again.", 
+                successTitle: "✅ SAVED!", successDesc: "Your unique entry code is:", successWarn: "📸 Take a screenshot or save this code! You'll need it if you win.",
+                closedTitle: "LOTTERY", closedMsg: "Lottery signups are currently closed.", closedSub: "Wait for the DJ's signal!"
             }
         };
 
@@ -148,8 +136,7 @@
             curLang = lang;
             document.getElementById('btnPl').classList.toggle('active', lang === 'pl');
             document.getElementById('btnEn').classList.toggle('active', lang === 'en');
-            document.documentElement.lang = lang;
-
+            
             const d = dict[lang];
             document.getElementById('txtNextDraw').textContent = d.draw;
             document.getElementById('txtPrize').textContent = d.prize;
@@ -159,11 +146,15 @@
             document.getElementById('txtSuccessTitle').textContent = d.successTitle;
             document.getElementById('txtSuccessDesc').textContent = d.successDesc;
             document.getElementById('txtSuccessWarn').textContent = d.successWarn;
+            
+            document.getElementById('txtClosedTitle').textContent = d.closedTitle;
+            document.getElementById('txtClosedMsg').textContent = d.closedMsg;
+            document.getElementById('txtClosedSub').textContent = d.closedSub;
         }
 
-        // --- LOGIKA FORMULARZA ---
-        
-        // ZAMIEŃ TEN LINK NA SWÓJ Z APPS SCRIPT
+        // ==========================================
+        //  TUTAJ WKLEJ LINK DO APPS SCRIPT
+        // ==========================================
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrW56GBRSIWz8jg2pPAhu33yYFA3zJBdY9BhN-xtU5D8SgTqVISTwd0BJlRcDE_SVy/exec";
         
         let deviceId = localStorage.getItem('lottery_device_id');
@@ -172,18 +163,31 @@
             localStorage.setItem('lottery_device_id', deviceId);
         }
 
+        // --- CYKLICZNE POBIERANIE STATUSU (CO 8 SEKUND) ---
+        function checkLotteryStatus() {
+            fetch(APPS_SCRIPT_URL)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('displayTime').textContent = data.nextDrawTime || "--:--";
+                    document.getElementById('displayPrize').textContent = data.currentPrize || "Niespodzianka";
+                    
+                    const overlay = document.getElementById('closedOverlay');
+                    if (data.isActive === false) {
+                        overlay.style.display = 'flex';
+                        setTimeout(() => overlay.style.opacity = '1', 10);
+                    } else {
+                        overlay.style.opacity = '0';
+                        setTimeout(() => overlay.style.display = 'none', 400);
+                    }
+                }).catch(err => console.log("Błąd odświeżania statusu loterii", err));
+        }
+        
+        checkLotteryStatus();
+        setInterval(checkLotteryStatus, 8000); 
+
+        // --- WYSYŁANIE FORMULARZA ---
         const btnSubmit = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMsg');
-
-        fetch(APPS_SCRIPT_URL)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('displayTime').textContent = data.nextDrawTime || "--:--";
-                document.getElementById('displayPrize').textContent = data.currentPrize || "Niespodzianka";
-            }).catch(() => {
-                document.getElementById('displayTime').textContent = "Błąd";
-                document.getElementById('displayPrize').textContent = "Brak połączenia";
-            });
 
         btnSubmit.addEventListener('click', async () => {
             const name = document.getElementById('nameInput').value.trim();
