@@ -3,54 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zapisy na Loterię</title>
+    <title>Loteria</title>
     <style>
-        body { margin: 0; padding: 20px; font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; box-sizing: border-box; }
-        .container { background: #1e1e1e; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 400px; width: 100%; text-align: center; }
-        h1 { color: #bb86fc; margin-top: 0; }
-        .draw-time { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 1.1rem; color: #ddd; }
-        .time-val { color: #03dac6; font-weight: bold; font-size: 1.5rem; display: block; margin-top: 5px; }
-        input { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #2c2c2c; color: white; font-size: 1.2rem; box-sizing: border-box; margin-bottom: 20px; text-align: center; }
-        input:focus { outline: 2px solid #bb86fc; }
-        button { width: 100%; padding: 15px; background: #e91e63; color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        button:disabled { background: #555; pointer-events: none; }
-        .footer { margin-top: 20px; font-size: 0.8rem; color: #777; }
+        :root { --bg: #121212; --card: #1e1e1e; --text: white; --accent: #bb86fc; }
+        body.light-mode { --bg: #f0f2f5; --card: white; --text: #333; --accent: #6200ee; }
         
-        /* Ekran sukcesu */
+        body { margin: 0; padding: 20px; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; min-height: 100vh; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;}
+        
+        .top-nav { width: 100%; max-width: 400px; display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .container { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 400px; width: 100%; text-align: center; box-sizing: border-box; }
+        
+        /* Przełączniki */
+        .toggle-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; filter: grayscale(1); transition: 0.2s; }
+        .toggle-btn.active { filter: grayscale(0); transform: scale(1.2); }
+
+        .draw-time { background: rgba(0,0,0,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--accent); }
+        .prize-val { color: var(--accent); font-weight: bold; font-size: 1.4rem; display: block; margin-top: 5px;}
+        
+        input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #444; background: rgba(0,0,0,0.1); color: var(--text); font-size: 1.2rem; box-sizing: border-box; margin-bottom: 20px; text-align: center; }
+        input:focus { outline: 2px solid var(--accent); }
+        button#btnSubmit { width: 100%; padding: 15px; background: #e91e63; color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        button#btnSubmit:disabled { background: #555; cursor: not-allowed; }
+        
+        .footer { margin-top: 20px; font-size: 0.8rem; opacity: 0.6; }
+
+        /* Ekran Sukcesu */
         #successScreen { display: none; }
         .ticket-code { font-size: 4rem; color: #4caf50; font-weight: 900; letter-spacing: 5px; margin: 20px 0; text-shadow: 0 0 20px rgba(76,175,80,0.4); }
         .warning { color: #ff9800; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; }
+        #statusMsg { color: #ff5252; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="formScreen">
-        <h1>🎟️ LOTERIA</h1>
-        <div class="draw-time">
-            Najbliższe losowanie:
-            <span class="time-val" id="displayTime">Ładowanie...</span>
+    <div class="top-nav">
+        <div class="lang-switch">
+            <button class="toggle-btn active" id="langPL">🇵🇱</button>
+            <button class="toggle-btn" id="langEN">🇬🇧</button>
         </div>
-        <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 20px;">Wpisz swoje imię, aby wziąć udział w losowaniu nagród!</p>
-        <input type="text" id="nameInput" placeholder="Twoje imię / pseudonim" autocomplete="off" maxlength="20">
+        <button class="toggle-btn" id="themeToggle">🌙</button>
+    </div>
+
+    <div class="container" id="formScreen">
+        <div class="draw-time">
+            <span id="txtNextDraw">Najbliższe losowanie:</span>
+            <span class="prize-val" id="displayTime">--:--</span>
+            <hr style="opacity: 0.2; margin: 15px 0;">
+            <span id="txtPrize">Nagroda:</span>
+            <span class="prize-val" id="displayPrize">Ładowanie...</span>
+        </div>
+
+        <input type="text" id="nameInput" placeholder="Twoje imię / Nick" autocomplete="off" maxlength="20">
         <button id="btnSubmit">Zapisz mnie!</button>
-        <div id="statusMsg" style="color: #ff5252; margin-top: 15px; font-weight: bold;"></div>
-        <div class="footer">Możesz wysłać tylko 1 zgłoszenie na jedno losowanie.</div>
+        <div id="statusMsg"></div>
+        <div class="footer" id="txtFooter">Możesz wysłać tylko 1 zgłoszenie na jedno losowanie/serię losowań.</div>
     </div>
 
     <div class="container" id="successScreen">
-        <h1>✅ ZAPISANO!</h1>
-        <p>Twój unikalny numer zgłoszenia to:</p>
+        <h1 id="txtSuccessTitle">✅ ZAPISANO!</h1>
+        <p id="txtSuccessDesc">Twój unikalny kod zgłoszenia to:</p>
         <div class="ticket-code" id="ticketCode">----</div>
-        <div class="warning">📸 Zrób zrzut ekranu (screenshot) lub zapisz ten numer! Będzie potrzebny po wygranej.</div>
+        <div class="warning" id="txtSuccessWarn">📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny po wygranej.</div>
     </div>
 
     <script>
         // ====== TUTAJ WKLEJ LINK DO NOWEGO APPS SCRIPT (LOTERII) ======
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrW56GBRSIWz8jg2pPAhu33yYFA3zJBdY9BhN-xtU5D8SgTqVISTwd0BJlRcDE_SVy/exec";
         
-        const btnSubmit = document.getElementById('btnSubmit');
-        const statusMsg = document.getElementById('statusMsg');
+        const translations = {
+            pl: { draw: "Najbliższe losowanie:", prize: "Nagroda:", placeholder: "Twoje imię / Nick", btn: "Zapisz mnie!", footer: "Możesz wysłać tylko 1 zgłoszenie na jedno losowanie/serię losowań.", errConn: "Błąd połączenia. Spróbuj ponownie.", successTitle: "✅ ZAPISANO!", successDesc: "Twój unikalny kod zgłoszenia to:", successWarn: "📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny po wygranej." },
+            en: { draw: "Next draw:", prize: "Prize:", placeholder: "Your name / Nick", btn: "Sign me up!", footer: "You can only send 1 entry per draw/series of draws.", errConn: "Connection error. Try again.", successTitle: "✅ SAVED!", successDesc: "Your unique entry code is:", successWarn: "📸 Take a screenshot or save this code! You'll need it if you win." }
+        };
+
+        let currentLang = 'pl';
+        function setLang(lang) {
+            currentLang = lang;
+            document.getElementById('langPL').classList.toggle('active', lang === 'pl');
+            document.getElementById('langEN').classList.toggle('active', lang === 'en');
+            
+            document.getElementById('txtNextDraw').textContent = translations[lang].draw;
+            document.getElementById('txtPrize').textContent = translations[lang].prize;
+            document.getElementById('nameInput').placeholder = translations[lang].placeholder;
+            document.getElementById('btnSubmit').textContent = translations[lang].btn;
+            document.getElementById('txtFooter').textContent = translations[lang].footer;
+            document.getElementById('txtSuccessTitle').textContent = translations[lang].successTitle;
+            document.getElementById('txtSuccessDesc').textContent = translations[lang].successDesc;
+            document.getElementById('txtSuccessWarn').textContent = translations[lang].successWarn;
+        }
+
+        document.getElementById('langPL').onclick = () => setLang('pl');
+        document.getElementById('langEN').onclick = () => setLang('en');
+
+        document.getElementById('themeToggle').onclick = function() {
+            document.body.classList.toggle('light-mode');
+            this.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+        };
 
         // Generowanie/pobieranie unikalnego ID urządzenia
         let deviceId = localStorage.getItem('lottery_device_id');
@@ -59,29 +106,34 @@
             localStorage.setItem('lottery_device_id', deviceId);
         }
 
-        // Pobranie godziny losowania
+        // Pobranie danych przy załadowaniu
         fetch(APPS_SCRIPT_URL)
             .then(res => res.json())
             .then(data => {
                 document.getElementById('displayTime').textContent = data.nextDrawTime || "--:--";
+                document.getElementById('displayPrize').textContent = data.currentPrize || "Niespodzianka";
             }).catch(() => {
-                document.getElementById('displayTime').textContent = "Czekaj na DJ-a";
+                document.getElementById('displayTime').textContent = "Błąd";
+                document.getElementById('displayPrize').textContent = "Brak połączenia";
             });
 
         // Wysłanie formularza
+        const btnSubmit = document.getElementById('btnSubmit');
+        const statusMsg = document.getElementById('statusMsg');
+
         btnSubmit.addEventListener('click', async () => {
             const name = document.getElementById('nameInput').value.trim();
             if (!name) return;
 
             btnSubmit.disabled = true;
-            btnSubmit.textContent = "Wysyłanie...";
+            btnSubmit.textContent = "...";
             statusMsg.textContent = "";
 
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({ name: name, deviceId: deviceId }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // text/plain omija błędy CORS
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
                 });
                 
                 const data = await response.json();
@@ -89,16 +141,16 @@
                 if (data.error) {
                     statusMsg.textContent = data.error;
                     btnSubmit.disabled = false;
-                    btnSubmit.textContent = "Zapisz mnie!";
+                    btnSubmit.textContent = translations[currentLang].btn;
                 } else if (data.success) {
                     document.getElementById('formScreen').style.display = "none";
                     document.getElementById('successScreen').style.display = "block";
                     document.getElementById('ticketCode').textContent = data.code;
                 }
             } catch (err) {
-                statusMsg.textContent = "Błąd połączenia. Spróbuj ponownie.";
+                statusMsg.textContent = translations[currentLang].errConn;
                 btnSubmit.disabled = false;
-                btnSubmit.textContent = "Zapisz mnie!";
+                btnSubmit.textContent = translations[currentLang].btn;
             }
         });
     </script>
