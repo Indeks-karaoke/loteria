@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zapisy na Loterię</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; box-sizing: border-box; }
+        .container { background: #1e1e1e; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 400px; width: 100%; text-align: center; }
+        h1 { color: #bb86fc; margin-top: 0; }
+        .draw-time { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 1.1rem; color: #ddd; }
+        .time-val { color: #03dac6; font-weight: bold; font-size: 1.5rem; display: block; margin-top: 5px; }
+        input { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #2c2c2c; color: white; font-size: 1.2rem; box-sizing: border-box; margin-bottom: 20px; text-align: center; }
+        input:focus { outline: 2px solid #bb86fc; }
+        button { width: 100%; padding: 15px; background: #e91e63; color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
+        button:disabled { background: #555; pointer-events: none; }
+        .footer { margin-top: 20px; font-size: 0.8rem; color: #777; }
+        
+        /* Ekran sukcesu */
+        #successScreen { display: none; }
+        .ticket-code { font-size: 4rem; color: #4caf50; font-weight: 900; letter-spacing: 5px; margin: 20px 0; text-shadow: 0 0 20px rgba(76,175,80,0.4); }
+        .warning { color: #ff9800; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="formScreen">
+        <h1>🎟️ LOTERIA</h1>
+        <div class="draw-time">
+            Najbliższe losowanie:
+            <span class="time-val" id="displayTime">Ładowanie...</span>
+        </div>
+        <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 20px;">Wpisz swoje imię, aby wziąć udział w losowaniu nagród!</p>
+        <input type="text" id="nameInput" placeholder="Twoje imię / pseudonim" autocomplete="off" maxlength="20">
+        <button id="btnSubmit">Zapisz mnie!</button>
+        <div id="statusMsg" style="color: #ff5252; margin-top: 15px; font-weight: bold;"></div>
+        <div class="footer">Możesz wysłać tylko 1 zgłoszenie na jedno losowanie.</div>
+    </div>
+
+    <div class="container" id="successScreen">
+        <h1>✅ ZAPISANO!</h1>
+        <p>Twój unikalny numer zgłoszenia to:</p>
+        <div class="ticket-code" id="ticketCode">----</div>
+        <div class="warning">📸 Zrób zrzut ekranu (screenshot) lub zapisz ten numer! Będzie potrzebny po wygranej.</div>
+    </div>
+
+    <script>
+        // ====== TUTAJ WKLEJ LINK DO NOWEGO APPS SCRIPT (LOTERII) ======
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrW56GBRSIWz8jg2pPAhu33yYFA3zJBdY9BhN-xtU5D8SgTqVISTwd0BJlRcDE_SVy/exec";
+        
+        const btnSubmit = document.getElementById('btnSubmit');
+        const statusMsg = document.getElementById('statusMsg');
+
+        // Generowanie/pobieranie unikalnego ID urządzenia
+        let deviceId = localStorage.getItem('lottery_device_id');
+        if (!deviceId) {
+            deviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('lottery_device_id', deviceId);
+        }
+
+        // Pobranie godziny losowania
+        fetch(APPS_SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('displayTime').textContent = data.nextDrawTime || "--:--";
+            }).catch(() => {
+                document.getElementById('displayTime').textContent = "Czekaj na DJ-a";
+            });
+
+        // Wysłanie formularza
+        btnSubmit.addEventListener('click', async () => {
+            const name = document.getElementById('nameInput').value.trim();
+            if (!name) return;
+
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = "Wysyłanie...";
+            statusMsg.textContent = "";
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ name: name, deviceId: deviceId }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // text/plain omija błędy CORS
+                });
+                
+                const data = await response.json();
+
+                if (data.error) {
+                    statusMsg.textContent = data.error;
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = "Zapisz mnie!";
+                } else if (data.success) {
+                    document.getElementById('formScreen').style.display = "none";
+                    document.getElementById('successScreen').style.display = "block";
+                    document.getElementById('ticketCode').textContent = data.code;
+                }
+            } catch (err) {
+                statusMsg.textContent = "Błąd połączenia. Spróbuj ponownie.";
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = "Zapisz mnie!";
+            }
+        });
+    </script>
+</body>
+</html>
