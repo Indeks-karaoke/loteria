@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Loteria</title>
     <style>
-        /* ZMIENNE KOLORÓW DLA TRYBU CIEMNEGO I JASNEGO */
+        /* ZMIENNE KOLORÓW DLA TRYBU CIEMNEGO I JASNEGO (FIOLETOWE) */
         :root {
             --bg-color: #121212;
             --container-bg: #1e1e1e;
@@ -13,9 +13,9 @@
             --text-muted: #b3b3b3;
             --input-bg: #2c2c2c;
             --border-color: #333333;
-            --primary: #e91e63; /* Zmieniony na różowy loterii */
-            --primary-hover: #c2185b;
-            --btn-text: #ffffff;
+            --primary: #bb86fc;
+            --primary-hover: #9965f4;
+            --btn-text: #000000;
             --danger: #ff5252;
             --item-hover: #3a3a3a;
         }
@@ -27,8 +27,8 @@
             --text-muted: #555555;
             --input-bg: #f9f9f9;
             --border-color: #cccccc;
-            --primary: #d81b60;
-            --primary-hover: #ad1457;
+            --primary: #6200ee;
+            --primary-hover: #3700b3;
             --btn-text: #ffffff;
             --item-hover: #f1f1f1;
         }
@@ -175,7 +175,6 @@
         const btnSubmit = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMsg');
 
-        // 1. Pobieranie początkowych danych z Gista (przez proxy Apps Script)
         fetch(APPS_SCRIPT_URL)
             .then(res => res.json())
             .then(data => {
@@ -186,7 +185,6 @@
                 document.getElementById('displayPrize').textContent = "Brak połączenia";
             });
 
-        // 2. Wysyłanie
         btnSubmit.addEventListener('click', async () => {
             const name = document.getElementById('nameInput').value.trim();
             if (!name) return;
