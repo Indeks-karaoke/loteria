@@ -362,7 +362,7 @@
         let lastActiveState = null;
 
         // Odbieranie statusu w czasie rzeczywistym
-        db.ref('loteria_status').on('value', (snapshot) => {
+        db.ref('loteria').on('value', (snapshot) => {
             const data = snapshot.val() || { isActive: false, nextDrawTime: "--:--", currentPrize: "Niespodzianka" };
 
             document.getElementById('displayTime').textContent = data.nextDrawTime || "--:--";
@@ -397,7 +397,7 @@
                 // Wygeneruj kod (4 losowe znaki)
                 const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-                await db.ref('loteria_zgloszenia').push({
+                await db.ref('loteria/entries').push({
                     name: name,
                     deviceId: deviceId,
                     code: code,
