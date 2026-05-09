@@ -1,72 +1,264 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Loteria</title>
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root {
-            --bg-color: #121212; --container-bg: #1e1e1e; --text-main: #ffffff;
-            --text-muted: #b3b3b3; --input-bg: #2c2c2c; --border-color: #333333;
-            --primary: #bb86fc; --primary-hover: #9965f4; --btn-text: #000000;
-            --danger: #ff5252; --item-hover: #3a3a3a;
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #b3b3b3;
+            --input-bg: #2c2c2c;
+            --border-color: #333333;
+            --primary: #bb86fc;
+            --primary-hover: #9965f4;
+            --btn-text: #000000;
+            --danger: #ff5252;
+            --item-hover: #3a3a3a;
         }
 
         body.light-mode {
-            --bg-color: #f0f2f5; --container-bg: #ffffff; --text-main: #121212;
-            --text-muted: #555555; --input-bg: #f9f9f9; --border-color: #cccccc;
-            --primary: #6200ee; --primary-hover: #3700b3; --btn-text: #ffffff;
+            --bg-color: #f0f2f5;
+            --container-bg: #ffffff;
+            --text-main: #121212;
+            --text-muted: #555555;
+            --input-bg: #f9f9f9;
+            --border-color: #cccccc;
+            --primary: #6200ee;
+            --primary-hover: #3700b3;
+            --btn-text: #ffffff;
             --item-hover: #f1f1f1;
         }
 
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: var(--bg-color); color: var(--text-main); 
-            margin: 0; padding: 40px 20px 20px 20px; box-sizing: border-box;
-            display: flex; justify-content: center; min-height: 100vh; 
-            align-items: flex-start; /* Zamiast center, przesuwa formularz do góry */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px 20px 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            align-items: flex-start;
             transition: 0.3s;
         }
-        
-        .container { background-color: var(--container-bg); padding: 30px 20px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; border: 1px solid var(--border-color); }
-        
-        .top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; position: relative;}
-        .lang-toggle { display: flex; justify-content: center; background: var(--input-bg); border-radius: 20px; padding: 4px; border: 1px solid var(--border-color); margin: 0 auto; }
-        .lang-btn { background: transparent; border: none; color: var(--text-muted); font-weight: bold; font-size: 15px; padding: 8px 18px; border-radius: 16px; cursor: pointer; transition: 0.3s; }
-        .lang-btn.active { background: var(--primary); color: var(--btn-text); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
-        .theme-toggle { background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 0; position: absolute; right: 0; transition: transform 0.2s; }
-        .theme-toggle:active { transform: scale(0.9); }
 
-        .draw-time { background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
-        .prize-val { color: var(--primary); font-weight: bold; font-size: 1.4rem; display: block; margin-top: 5px;}
-        hr.divider { border: none; border-top: 1px solid var(--border-color); margin: 15px 0; }
-
-        input { width: 100%; padding: 16px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 18px; box-sizing: border-box; text-align: center; outline: none; transition: 0.3s;}
-        input:focus { border-color: var(--primary); }
-        
-        button.action-btn { width: 100%; padding: 18px; background: var(--primary); color: var(--btn-text); border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;}
-        button.action-btn:active { transform: scale(0.98); background: var(--primary-hover); }
-        button.action-btn:disabled { background: #555; cursor: not-allowed; transform: none; }
-        
-        .footer { margin-top: 10px; font-size: 0.85rem; color: var(--text-muted); text-align: center; line-height: 1.4; }
-
-        #successScreen { display: none; text-align: center; }
-        h1.success-title { color: #4caf50; margin-top: 0; font-size: 28px; }
-        .ticket-code { font-size: 4rem; color: #4caf50; font-weight: 900; letter-spacing: 5px; margin: 20px 0; text-shadow: 0 0 20px rgba(76,175,80,0.4); }
-        .warning { color: #ff9800; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; line-height: 1.4; }
-        #statusMsg { color: var(--danger); margin-top: -10px; font-weight: bold; text-align: center; }
-
-        /* NAKŁADKA ZAMKNIĘTYCH ZAPISÓW */
-        .closed-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: var(--bg-color); z-index: 99999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 20px; box-sizing: border-box; transition: opacity 0.4s ease;
+        .container {
+            background-color: var(--container-bg);
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 1px solid var(--border-color);
         }
-        .closed-overlay .closed-msg { color: var(--text-main); font-size: 1.3rem; margin-bottom: 25px; font-weight: bold; line-height: 1.4;}
-        .closed-overlay .closed-sub { color: var(--text-muted); font-size: 1.1rem; line-height: 1.5; background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);}
+
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            position: relative;
+        }
+
+        .lang-toggle {
+            display: flex;
+            justify-content: center;
+            background: var(--input-bg);
+            border-radius: 20px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            margin: 0 auto;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-weight: bold;
+            font-size: 15px;
+            padding: 8px 18px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            color: var(--btn-text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            position: absolute;
+            right: 0;
+            transition: transform 0.2s;
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.9);
+        }
+
+        .draw-time {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .prize-val {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.4rem;
+            display: block;
+            margin-top: 5px;
+        }
+
+        hr.divider {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 15px 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 18px;
+            box-sizing: border-box;
+            text-align: center;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button.action-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: var(--btn-text);
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button.action-btn:active {
+            transform: scale(0.98);
+            background: var(--primary-hover);
+        }
+
+        button.action-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        #successScreen {
+            display: none;
+            text-align: center;
+        }
+
+        h1.success-title {
+            color: #4caf50;
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        .ticket-code {
+            font-size: 4rem;
+            color: #4caf50;
+            font-weight: 900;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .warning {
+            color: #ff9800;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        #statusMsg {
+            color: var(--danger);
+            margin-top: -10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .closed-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-color);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: opacity 0.4s ease;
+        }
+
+        .closed-overlay .closed-msg {
+            color: var(--text-main);
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .closed-overlay .closed-sub {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.5;
+            background: var(--input-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
     </style>
 </head>
+
 <body>
 
     <div id="closedOverlay" class="closed-overlay" style="display: none; opacity: 0;">
@@ -82,7 +274,7 @@
 
     <div class="container" id="formScreen">
         <div class="top-controls">
-            <div style="width: 24px;"></div> 
+            <div style="width: 24px;"></div>
             <div class="lang-toggle">
                 <button id="btnPl" class="lang-btn active" onclick="setLanguage('pl')">PL</button>
                 <button id="btnEn" class="lang-btn" onclick="setLanguage('en')">EN</button>
@@ -101,7 +293,7 @@
         <input type="text" id="nameInput" placeholder="Twoje imię / Nick" autocomplete="off" maxlength="20">
         <button id="submitBtn" class="action-btn">Zapisz mnie! 🚀</button>
         <div id="statusMsg"></div>
-        
+
         <div class="footer" id="txtFooter">Możesz wysłać tylko 1 zgłoszenie na jedno losowanie/serię losowań.</div>
     </div>
 
@@ -109,10 +301,24 @@
         <h1 class="success-title" id="txtSuccessTitle">✅ ZAPISANO!</h1>
         <p id="txtSuccessDesc" style="color: var(--text-muted);">Twój unikalny kod zgłoszenia to:</p>
         <div class="ticket-code" id="ticketCode">----</div>
-        <div class="warning" id="txtSuccessWarn">📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny po wygranej.</div>
+        <div class="warning" id="txtSuccessWarn">📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny
+            po wygranej.</div>
     </div>
 
     <script>
+        // --- KONFIGURACJA FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBjS0W8W6iwy3i3yaVVCyMF-FimS1VzH4",
+            authDomain: "indeks-karaoke.firebaseapp.com",
+            databaseURL: "https://indeks-karaoke-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "indeks-karaoke",
+            storageBucket: "indeks-karaoke.firebasestorage.app",
+            messagingSenderId: "870801348066",
+            appId: "1:870801348066:web:1eb45469e18a2ea45e15bb"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const themeToggle = document.getElementById('themeToggle');
         let isLightMode = localStorage.getItem('lottery_theme') === 'light';
         if (isLightMode) document.body.classList.add('light-mode');
@@ -126,18 +332,8 @@
         });
 
         const dict = {
-            pl: { 
-                draw: "Najbliższe losowanie:", prize: "Nagroda:", placeholder: "Twoje imię / Pseudonim", 
-                btnReady: "Zapisz mnie! 🚀", btnSending: "Wysyłanie... ⏳",
-                footer: "Możesz wysłać tylko 1 zgłoszenie na jedno losowanie/serię losowań.", errConn: "❌ Błąd połączenia. Spróbuj ponownie.", 
-                successTitle: "✅ ZAPISANO!", successDesc: "Twój unikalny kod zgłoszenia to:", successWarn: "📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny po wygranej."
-            },
-            en: { 
-                draw: "Next draw:", prize: "Prize:", placeholder: "Your name / Nick", 
-                btnReady: "Sign me up! 🚀", btnSending: "Sending... ⏳",
-                footer: "You can only send 1 entry per draw/series of draws.", errConn: "❌ Connection error. Try again.", 
-                successTitle: "✅ SAVED!", successDesc: "Your unique entry code is:", successWarn: "📸 Take a screenshot or save this code! You'll need it if you win."
-            }
+            pl: { draw: "Najbliższe losowanie:", prize: "Nagroda:", placeholder: "Twoje imię / Pseudonim", btnReady: "Zapisz mnie! 🚀", btnSending: "Wysyłanie... ⏳", footer: "Możesz wysłać tylko 1 zgłoszenie na jedno losowanie/serię losowań.", errConn: "❌ Błąd połączenia. Spróbuj ponownie.", successTitle: "✅ ZAPISANO!", successDesc: "Twój unikalny kod zgłoszenia to:", successWarn: "📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny po wygranej." },
+            en: { draw: "Next draw:", prize: "Prize:", placeholder: "Your name / Nick", btnReady: "Sign me up! 🚀", btnSending: "Sending... ⏳", footer: "You can only send 1 entry per draw/series of draws.", errConn: "❌ Connection error. Try again.", successTitle: "✅ SAVED!", successDesc: "Your unique entry code is:", successWarn: "📸 Take a screenshot or save this code! You'll need it if you win." }
         };
 
         let curLang = 'pl';
@@ -145,60 +341,47 @@
             curLang = lang;
             document.getElementById('btnPl').classList.toggle('active', lang === 'pl');
             document.getElementById('btnEn').classList.toggle('active', lang === 'en');
-            
+
             const d = dict[lang];
             document.getElementById('txtNextDraw').textContent = d.draw;
             document.getElementById('txtPrize').textContent = d.prize;
             document.getElementById('nameInput').placeholder = d.placeholder;
-            if(!document.getElementById('submitBtn').disabled) document.getElementById('submitBtn').textContent = d.btnReady;
+            if (!document.getElementById('submitBtn').disabled) document.getElementById('submitBtn').textContent = d.btnReady;
             document.getElementById('txtFooter').textContent = d.footer;
             document.getElementById('txtSuccessTitle').textContent = d.successTitle;
             document.getElementById('txtSuccessDesc').textContent = d.successDesc;
             document.getElementById('txtSuccessWarn').textContent = d.successWarn;
         }
 
-        // ==========================================
-        //  TUTAJ WKLEJ LINK DO APPS SCRIPT
-        // ==========================================
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrW56GBRSIWz8jg2pPAhu33yYFA3zJBdY9BhN-xtU5D8SgTqVISTwd0BJlRcDE_SVy/exec";
-        
         let deviceId = localStorage.getItem('lottery_device_id');
         if (!deviceId) {
             deviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('lottery_device_id', deviceId);
         }
 
-        // Zmienna trzymająca poprzedni status, aby unikać zbędnego mrugania ekranu
         let lastActiveState = null;
 
-        // --- CYKLICZNE POBIERANIE STATUSU (CO 8 SEKUND) ---
-        function checkLotteryStatus() {
-            fetch(APPS_SCRIPT_URL)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('displayTime').textContent = data.nextDrawTime || "--:--";
-                    document.getElementById('displayPrize').textContent = data.currentPrize || "Niespodzianka";
-                    
-                    // Pokazuj/ukrywaj ekran blokady TYLKO, gdy stan faktycznie się zmienił
-                    if (lastActiveState !== data.isActive) {
-                        lastActiveState = data.isActive;
-                        const overlay = document.getElementById('closedOverlay');
-                        
-                        if (data.isActive === false) {
-                            overlay.style.display = 'flex';
-                            setTimeout(() => overlay.style.opacity = '1', 50);
-                        } else {
-                            overlay.style.opacity = '0';
-                            setTimeout(() => overlay.style.display = 'none', 400);
-                        }
-                    }
-                }).catch(err => console.log("Błąd odświeżania statusu loterii", err));
-        }
-        
-        checkLotteryStatus();
-        setInterval(checkLotteryStatus, 8000); 
+        // Odbieranie statusu w czasie rzeczywistym
+        db.ref('loteria_status').on('value', (snapshot) => {
+            const data = snapshot.val() || { isActive: false, nextDrawTime: "--:--", currentPrize: "Niespodzianka" };
 
-        // --- WYSYŁANIE FORMULARZA ---
+            document.getElementById('displayTime').textContent = data.nextDrawTime || "--:--";
+            document.getElementById('displayPrize').textContent = data.currentPrize || "Niespodzianka";
+
+            if (lastActiveState !== data.isActive) {
+                lastActiveState = data.isActive;
+                const overlay = document.getElementById('closedOverlay');
+
+                if (data.isActive === false) {
+                    overlay.style.display = 'flex';
+                    setTimeout(() => overlay.style.opacity = '1', 50);
+                } else {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.style.display = 'none', 400);
+                }
+            }
+        });
+
         const btnSubmit = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMsg');
 
@@ -211,23 +394,20 @@
             statusMsg.textContent = "";
 
             try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ name: name, deviceId: deviceId }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
-                });
-                
-                const data = await response.json();
+                // Wygeneruj kod (4 losowe znaki)
+                const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-                if (data.error) {
-                    statusMsg.textContent = data.error;
-                    btnSubmit.disabled = false;
-                    btnSubmit.textContent = dict[curLang].btnReady;
-                } else if (data.success) {
-                    document.getElementById('formScreen').style.display = "none";
-                    document.getElementById('successScreen').style.display = "block";
-                    document.getElementById('ticketCode').textContent = data.code;
-                }
+                await db.ref('loteria_zgloszenia').push({
+                    name: name,
+                    deviceId: deviceId,
+                    code: code,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                document.getElementById('formScreen').style.display = "none";
+                document.getElementById('successScreen').style.display = "block";
+                document.getElementById('ticketCode').textContent = code;
+
             } catch (err) {
                 statusMsg.textContent = dict[curLang].errConn;
                 btnSubmit.disabled = false;
@@ -238,4 +418,5 @@
         setLanguage('pl');
     </script>
 </body>
+
 </html>
