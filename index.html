@@ -331,7 +331,7 @@
             themeToggle.textContent = isLightMode ? '🌙' : '☀️';
         });
 
-        // Dodano komunikaty o błędach do słownika
+        // Słownik
         const dict = {
             pl: { draw: "Najbliższe losowanie:", prize: "Nagroda:", placeholder: "Twoje imię / Pseudonim", btnReady: "Zapisz mnie! 🚀", btnSending: "Wysyłanie... ⏳", footer: "Możesz wysłać tylko 1 zgłoszenie na jedno losowanie/serię losowań.", errConn: "❌ Błąd połączenia. Spróbuj ponownie.", errDupDevice: "❌ Z tego telefonu wysłano już zgłoszenie!", errDupName: "❌ To imię jest już na liście! Dodaj np. pierwszą literę nazwiska.", successTitle: "✅ ZAPISANO!", successDesc: "Twój unikalny kod zgłoszenia to:", successWarn: "📸 Zrób zrzut ekranu (screenshot) lub zapisz ten kod! Będzie potrzebny po wygranej." },
             en: { draw: "Next draw:", prize: "Prize:", placeholder: "Your name / Nick", btnReady: "Sign me up! 🚀", btnSending: "Sending... ⏳", footer: "You can only send 1 entry per draw/series of draws.", errConn: "❌ Connection error. Try again.", errDupDevice: "❌ An entry has already been sent from this device!", errDupName: "❌ This name is already on the list! Add e.g. the first letter of your last name.", successTitle: "✅ SAVED!", successDesc: "Your unique entry code is:", successWarn: "📸 Take a screenshot or save this code! You'll need it if you win." }
@@ -353,7 +353,6 @@
             document.getElementById('txtSuccessDesc').textContent = d.successDesc;
             document.getElementById('txtSuccessWarn').textContent = d.successWarn;
             
-            // Wyczyść ewentualny błąd przy zmianie języka
             document.getElementById('statusMsg').textContent = "";
         }
 
@@ -363,20 +362,30 @@
             localStorage.setItem('lottery_device_id', deviceId);
         }
 
+        // ===============================================
+        // ODBIERANIE DANYCH (ROZDZIELONE DLA REGUL FIREBASE)
+        // ===============================================
         let lastActiveState = null;
 
-        // Odbieranie statusu w czasie rzeczywistym
-        db.ref('loteria').on('value', (snapshot) => {
-            const data = snapshot.val() || { isActive: false, nextDrawTime: "--:--", currentPrize: "Niespodzianka" };
+        // 1. Czas losowania
+        db.ref('loteria/nextDrawTime').on('value', (snap) => {
+            document.getElementById('displayTime').textContent = snap.val() || "--:--";
+        });
 
-            document.getElementById('displayTime').textContent = data.nextDrawTime || "--:--";
-            document.getElementById('displayPrize').textContent = data.currentPrize || "Niespodzianka";
+        // 2. Nagroda
+        db.ref('loteria/currentPrize').on('value', (snap) => {
+            document.getElementById('displayPrize').textContent = snap.val() || "Niespodzianka";
+        });
 
-            if (lastActiveState !== data.isActive) {
-                lastActiveState = data.isActive;
+        // 3. Status aktywności (blokada ekranu)
+        db.ref('loteria/isActive').on('value', (snap) => {
+            const isActive = snap.val() !== false; // Domyślnie włączone jeśli null
+            
+            if (lastActiveState !== isActive) {
+                lastActiveState = isActive;
                 const overlay = document.getElementById('closedOverlay');
 
-                if (data.isActive === false) {
+                if (!isActive) {
                     overlay.style.display = 'flex';
                     setTimeout(() => overlay.style.opacity = '1', 50);
                 } else {
@@ -386,6 +395,10 @@
             }
         });
 
+
+        // ===============================================
+        // WYSYŁANIE FORMULARZA
+        // ===============================================
         const btnSubmit = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMsg');
 
@@ -419,8 +432,8 @@
                     return;
                 }
 
-                // 4. Jeśli wszystko OK, generujemy kod (4 losowe znaki) i wysyłamy
-                const code = Math.random().toString(36).substring(2, 6).toUpperCase();
+                // 4. Jeśli wszystko OK, generujemy 4-CYFROWY kod (np. od 1000 do 9999)
+                const code = Math.floor(1000 + Math.random() * 9000).toString();
 
                 await db.ref('loteria/entries').push({
                     name: name,
